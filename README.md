@@ -5,12 +5,12 @@ An MCP server implementation that integrates the SearxNG API, providing web sear
 ## Features
 
 - **Web Search**: General queries, news, articles, with pagination.
-- **Pagination**: Control return size and result counts with filtering options.
+- **Pagination**: Control return size and result counts options.
 
 ## Tools
 
 - **searxng_web_search**
-  - Execute web searches with pagination and filtering
+  - Execute web searches with pagination
   - Inputs:
     - `query` (string): Search terms
     - `count` (number, optional): Results per page (default 20)
