@@ -43,6 +43,7 @@ const server = new Server(
   },
   {
     capabilities: {
+      resources: {},
       tools: {},
     },
   }
@@ -151,7 +152,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function runServer() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("SearxNG MCP Server running on stdio");
 }
 
 runServer().catch((error) => {

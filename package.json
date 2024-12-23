@@ -8,22 +8,22 @@
     "bugs": "https://github.com/ihor-sokoliuk/mcp-searxng/issues",
     "type": "module",
     "bin": {
-      "mcp-server-brave-search": "dist/index.js"
+        "mcp-server-brave-search": "dist/index.js"
     },
     "files": [
-      "dist"
+        "dist"
     ],
     "scripts": {
-      "build": "tsc && shx chmod +x dist/*.js",
-      "prepare": "npm run build",
-      "watch": "tsc --watch"
+        "build": "tsc && shx chmod +x dist/*.js",
+        "prepare": "npm run build",
+        "watch": "tsc --watch"
     },
     "dependencies": {
-      "@modelcontextprotocol/sdk": "1.0.1"
+        "@modelcontextprotocol/sdk": "1.0.1"
     },
     "devDependencies": {
-      "@types/node": "^22",
-      "shx": "^0.3.4",
-      "typescript": "^5.6.2"
+        "@types/node": "^22.10.2",
+        "shx": "^0.3.4",
+        "typescript": "^5.7.2"
     }
-  }
+}

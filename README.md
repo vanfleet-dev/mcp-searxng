@@ -20,11 +20,40 @@ An MCP server implementation that integrates the SearxNG API, providing web sear
 
 ### Setting the SEARXNG_URL
 
-1. Choose a SearxNG instance from the [list of public instances](https://searx.space/) or to your local environment.
+1. Choose a SearxNG instance from the [list of public instances](https://searx.space/) or use your local environment.
 2. Set the `SEARXNG_URL` environment variable to the instance URL.
-3. The default `SEARXNG_URL` value is `http://localhost:8080`
+3. The default `SEARXNG_URL` value is `http://localhost:8080`.
 
 ### Usage with Claude Desktop
+
+### NPX
+
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "npx",
+      "args": [
+        "-y"
+        "<full path to mcp-searxng repo>/"
+      ],
+      "env": {
+        "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL"
+      }
+    }
+  }
+}
+```
+
+### Docker
+
+#### Build
+
+```bash
+docker build -t mcp-server-searxng:latest -f Dockerfile .
+```
+
+#### Use
 
 Add this to your `claude_desktop_config.json`:
 
@@ -49,34 +78,6 @@ Add this to your `claude_desktop_config.json`:
 }
 ```
 
-### Usage with VSCode
-
-Add this to your `cline_mcp_settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "searxng": {
-      "command": "npx",
-      "args": [
-        "-y"
-        "<full path to mcp-searxng repo>/index.js"
-      ],
-      "env": {
-        "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL"
-      }
-    }
-  }
-}
-```
-
-## Build
-
-Docker build:
-
-```bash
-docker build -t mcp-server-searxng:latest -f Dockerfile .
-```
 
 ## License
 
