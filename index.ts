@@ -7,12 +7,12 @@ import {
   ListToolsRequestSchema,
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
-import { NodeHtmlMarkdown } from 'node-html-markdown';
+import { NodeHtmlMarkdown } from "node-html-markdown";
 
 const WEB_SEARCH_TOOL: Tool = {
   name: "searxng_web_search",
   description:
-    "Performs a web search using the SearxNG API, ideal for general queries, news, articles, and online content. " +
+    "Performs a web search using the SearXNG API, ideal for general queries, news, articles, and online content. " +
     "Use this for broad information gathering, recent events, or when you need diverse web sources.",
   inputSchema: {
     type: "object",
@@ -56,8 +56,8 @@ const READ_URL_TOOL: Tool = {
 // Server implementation
 const server = new Server(
   {
-    name: "example-servers/searxng-search",
-    version: "0.1.0",
+    name: "ihor-sokoliuk/mcp-searxng",
+    version: "0.2.2",
   },
   {
     capabilities: {
@@ -67,7 +67,7 @@ const server = new Server(
   }
 );
 
-interface SearxNGWeb {
+interface SearXNGWeb {
   results: Array<{
     title: string;
     content: string;
@@ -75,7 +75,7 @@ interface SearxNGWeb {
   }>;
 }
 
-function isSearxNGWebSearchArgs(
+function isSearXNGWebSearchArgs(
   args: unknown
 ): args is { query: string; count?: number } {
   return (
@@ -104,13 +104,13 @@ async function performWebSearch(
 
   if (!response.ok) {
     throw new Error(
-      `SearxNG API error: ${response.status} ${
+      `SearXNG API error: ${response.status} ${
         response.statusText
       }\n${await response.text()}`
     );
   }
 
-  const data = (await response.json()) as SearxNGWeb;
+  const data = (await response.json()) as SearXNGWeb;
 
   const results = (data.results || []).map((result) => ({
     title: result.title || "",
@@ -123,7 +123,10 @@ async function performWebSearch(
     .join("\n\n");
 }
 
-async function fetchAndConvertToMarkdown(url: string, timeoutMs: number = 10000) {
+async function fetchAndConvertToMarkdown(
+  url: string,
+  timeoutMs: number = 10000
+) {
   // Create an AbortController instance
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -131,7 +134,7 @@ async function fetchAndConvertToMarkdown(url: string, timeoutMs: number = 10000)
   try {
     // Fetch the URL with the abort signal
     const response = await fetch(url, {
-      signal: controller.signal
+      signal: controller.signal,
     });
 
     if (!response.ok) {
@@ -146,10 +149,10 @@ async function fetchAndConvertToMarkdown(url: string, timeoutMs: number = 10000)
 
     return markdownContent;
   } catch (error: any) {
-    if (error.name === 'AbortError') {
+    if (error.name === "AbortError") {
       throw new Error(`Request timed out after ${timeoutMs}ms`);
     }
-    console.error('Error:', error.message);
+    console.error("Error:", error.message);
     throw error;
   } finally {
     // Clean up the timeout to prevent memory leaks
@@ -161,7 +164,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [WEB_SEARCH_TOOL, READ_URL_TOOL],
 }));
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
   try {
     const { name, arguments: args } = request.params;
 
@@ -170,7 +173,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     if (name === "searxng_web_search") {
-      if (!isSearxNGWebSearchArgs(args)) {
+      if (!isSearXNGWebSearchArgs(args)) {
         throw new Error("Invalid arguments for searxng_web_search");
       }
       const { query, count = 10 } = args;
@@ -182,12 +185,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     if (name === "web_url_read") {
-        const { url } = args;
-        const result = await fetchAndConvertToMarkdown(url as string);
-        return {
-            content: [{ type: "text", text: result }],
-            isError: false,
-        }
+      const { url } = args;
+      const result = await fetchAndConvertToMarkdown(url as string);
+      return {
+        content: [{ type: "text", text: result }],
+        isError: false,
+      };
     }
 
     return {

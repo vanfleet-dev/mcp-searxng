@@ -46,9 +46,30 @@ npx -y @smithery/cli install @ihor-sokoliuk/server-searxng --client claude
     "searxng": {
       "command": "npx",
       "args": [
-        "-y"
-        "<full path to mcp-searxng repo>/"
+        "-y",
+        "mcp-searxng"
       ],
+      "env": {
+        "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL"
+      }
+    }
+  }
+}
+```
+
+### NPM
+
+```bash
+npm install -g mcp-searxng
+```
+
+And then in your MCP config file:
+
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "mcp-searxng",
       "env": {
         "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL"
       }
@@ -62,7 +83,7 @@ npx -y @smithery/cli install @ihor-sokoliuk/server-searxng --client claude
 #### Build
 
 ```bash
-docker build -t mcp-server-searxng:latest -f Dockerfile .
+docker build -t mcp-searxng:latest -f Dockerfile .
 ```
 
 #### Use
@@ -80,7 +101,7 @@ Add this to your `claude_desktop_config.json`:
         "--rm",
         "-e",
         "SEARXNG_URL",
-        "mcp-server-searxng:latest"
+        "mcp-searxng:latest"
       ],
       "env": {
         "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL"
