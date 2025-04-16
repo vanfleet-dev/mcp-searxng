@@ -21,15 +21,10 @@ const WEB_SEARCH_TOOL: Tool = {
         type: "string",
         description: "Search query",
       },
-      count: {
+      pageno: {
         type: "number",
-        description: "Number of results",
-        default: 20,
-      },
-      offset: {
-        type: "number",
-        description: "Pagination offset",
-        default: 0,
+        description: "Search page number (starts at 1)",
+        default: 1,
       },
     },
     required: ["query"],
@@ -77,7 +72,7 @@ interface SearXNGWeb {
 
 function isSearXNGWebSearchArgs(
   args: unknown
-): args is { query: string; count?: number } {
+): args is { query: string; pageno?: number } {
   return (
     typeof args === "object" &&
     args !== null &&
@@ -88,15 +83,13 @@ function isSearXNGWebSearchArgs(
 
 async function performWebSearch(
   query: string,
-  count: number = 10,
-  offset: number = 0
+  pageno: number = 1
 ) {
   const searxngUrl = process.env.SEARXNG_URL || "http://localhost:8080";
   const url = new URL(`${searxngUrl}/search`);
   url.searchParams.set("q", query);
   url.searchParams.set("format", "json");
-  url.searchParams.set("start", offset.toString());
-  url.searchParams.set("count", count.toString());
+  url.searchParams.set("pageno", pageno.toString());
 
   const response = await fetch(url.toString(), {
     method: "GET",
@@ -176,8 +169,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
       if (!isSearXNGWebSearchArgs(args)) {
         throw new Error("Invalid arguments for searxng_web_search");
       }
-      const { query, count = 10 } = args;
-      const results = await performWebSearch(query, count);
+      const { query, pageno = 1 } = args;
+      const results = await performWebSearch(query, pageno);
       return {
         content: [{ type: "text", text: results }],
         isError: false,

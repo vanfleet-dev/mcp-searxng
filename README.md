@@ -9,7 +9,7 @@ An [MCP server](https://modelcontextprotocol.io/introduction) implementation tha
 ## Features
 
 - **Web Search**: General queries, news, articles, with pagination.
-- **Pagination**: Control return size and result counts options.
+- **Pagination**: Control which page of results to retrieve.
 
 ## Tools
 
@@ -17,8 +17,7 @@ An [MCP server](https://modelcontextprotocol.io/introduction) implementation tha
   - Execute web searches with pagination
   - Inputs:
     - `query` (string): Search terms
-    - `count` (number, optional): Results per page (default 20)
-    - `offset` (number, optional): Pagination offset (default 0)
+    - `pageno` (number, optional): Search page number, starts at 1 (default 1)
 
 ## Configuration
 
