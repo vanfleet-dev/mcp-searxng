@@ -1,0 +1,77 @@
+name: Automatic Version and Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - '.dockerignore'
+
+jobs:
+  auto-version:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }} # Use a Personal Access Token with repo scope
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      
+      - name: Get current version
+        id: current_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      
+      - name: Determine if patch, minor, or major bump
+        id: bump_type
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if [[ "$COMMIT_MSG" == *"BREAKING CHANGE"* || "$COMMIT_MSG" == *"#major"* ]]; then
+            echo "type=major" >> $GITHUB_OUTPUT
+          elif [[ "$COMMIT_MSG" == *"feat"* || "$COMMIT_MSG" == *"#minor"* ]]; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Bump version and push tag
+        id: bump_version
+        run: |
+          npm version ${{ steps.bump_type.outputs.type }} -m "Bump version to %s [skip ci]"
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          git push
+          git push --tags
+      
+      - name: Set tag message
+        run: |
+          echo "Released v${{ steps.bump_version.outputs.new_version }} automatically from commit $(git rev-parse --short HEAD)" > tag_message.txt
+          git tag -a -f "v${{ steps.bump_version.outputs.new_version }}" -F tag_message.txt
+          git push --tags --force
+
+      # This step is optional - creates a release on GitHub
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          tag_name: "v${{ steps.bump_version.outputs.new_version }}"
+          release_name: "v${{ steps.bump_version.outputs.new_version }}"
+          body: |
+            Automatically generated release for version ${{ steps.bump_version.outputs.new_version }}
+            
+            Changes since v${{ steps.current_version.outputs.version }}:
+            ${{ github.event.head_commit.message }}
+          draft: false
+          prerelease: false

@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - main
 
 jobs:
   build-and-publish:
@@ -21,7 +19,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org/'
       
       - name: Install dependencies
-        run: npm install
+        run: npm ci --ignore-scripts --omit-dev
       
       - name: Build package
         run: npm run build
