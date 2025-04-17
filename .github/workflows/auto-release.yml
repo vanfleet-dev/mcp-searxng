@@ -18,6 +18,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }} # Use a Personal Access Token with repo scope
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,8 +27,18 @@ jobs:
       
       - name: Configure Git
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          # Verify we're in a git repository before using --local
+          if [ -d .git ]; then
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+          else
+            # Global fallback if not in a git repository
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git config --global user.name "github-actions[bot]"
+            # Debug info
+            echo "Current directory: $(pwd)"
+            ls -la
+          fi
       
       - name: Get current version
         id: current_version
