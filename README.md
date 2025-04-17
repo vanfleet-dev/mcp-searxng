@@ -85,7 +85,36 @@ And then in your MCP config file:
 
 ### Docker
 
-#### Build
+#### Using Pre-built Image from Docker Hub
+
+```bash
+docker pull isokoliuk/mcp-searxng:latest
+```
+
+Add this to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "SEARXNG_URL",
+        "isokoliuk/mcp-searxng:latest"
+      ],
+      "env": {
+        "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL"
+      }
+    }
+  }
+}
+```
+
+#### Build Locally
 
 ```bash
 docker build -t mcp-searxng:latest -f Dockerfile .
