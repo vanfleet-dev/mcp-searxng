@@ -26,6 +26,12 @@ const WEB_SEARCH_TOOL: Tool = {
         description: "Search page number (starts at 1)",
         default: 1,
       },
+      time_range: {
+        type: "string",
+        description: "Time range of search (day, month, year)",
+        enum: ["", "day", "month", "year"],
+        default: "",
+      },
     },
     required: ["query"],
   },
@@ -72,7 +78,7 @@ interface SearXNGWeb {
 
 function isSearXNGWebSearchArgs(
   args: unknown
-): args is { query: string; pageno?: number } {
+): args is { query: string; pageno?: number; time_range?: string } {
   return (
     typeof args === "object" &&
     args !== null &&
@@ -83,13 +89,18 @@ function isSearXNGWebSearchArgs(
 
 async function performWebSearch(
   query: string,
-  pageno: number = 1
+  pageno: number = 1,
+  time_range: string = ""
 ) {
   const searxngUrl = process.env.SEARXNG_URL || "http://localhost:8080";
   const url = new URL(`${searxngUrl}/search`);
   url.searchParams.set("q", query);
   url.searchParams.set("format", "json");
   url.searchParams.set("pageno", pageno.toString());
+  
+  if (time_range && ["day", "month", "year"].includes(time_range)) {
+    url.searchParams.set("time_range", time_range);
+  }
 
   const response = await fetch(url.toString(), {
     method: "GET",
@@ -169,8 +180,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
       if (!isSearXNGWebSearchArgs(args)) {
         throw new Error("Invalid arguments for searxng_web_search");
       }
-      const { query, pageno = 1 } = args;
-      const results = await performWebSearch(query, pageno);
+      const { query, pageno = 1, time_range = "" } = args;
+      const results = await performWebSearch(query, pageno, time_range);
       return {
         content: [{ type: "text", text: results }],
         isError: false,
