@@ -37,6 +37,12 @@ const WEB_SEARCH_TOOL: Tool = {
         description: "Language code for search results (e.g., 'en', 'fr', 'de'). Default is instance-dependent.",
         default: "all",
       },
+      safesearch: {
+        type: "number",
+        description: "Safe search filter level (0: None, 1: Moderate, 2: Strict)",
+        enum: [0, 1, 2],
+        default: undefined,
+      },
     },
     required: ["query"],
   },
@@ -83,7 +89,7 @@ interface SearXNGWeb {
 
 function isSearXNGWebSearchArgs(
   args: unknown
-): args is { query: string; pageno?: number; time_range?: string; language?: string } {
+): args is { query: string; pageno?: number; time_range?: string; language?: string; safesearch?: number } {
   return (
     typeof args === "object" &&
     args !== null &&
@@ -96,7 +102,8 @@ async function performWebSearch(
   query: string,
   pageno: number = 1,
   time_range: string = "",
-  language: string = "all"
+  language: string = "all",
+  safesearch?: number
 ) {
   const searxngUrl = process.env.SEARXNG_URL || "http://localhost:8080";
   const url = new URL(`${searxngUrl}/search`);
@@ -110,6 +117,10 @@ async function performWebSearch(
 
   if (language && language !== "all") {
     url.searchParams.set("language", language);
+  }
+  
+  if (safesearch !== undefined && [0, 1, 2].includes(safesearch)) {
+    url.searchParams.set("safesearch", safesearch.toString());
   }
 
   const response = await fetch(url.toString(), {
@@ -190,8 +201,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
       if (!isSearXNGWebSearchArgs(args)) {
         throw new Error("Invalid arguments for searxng_web_search");
       }
-      const { query, pageno = 1, time_range = "", language = "all" } = args;
-      const results = await performWebSearch(query, pageno, time_range, language);
+      const { query, pageno = 1, time_range = "", language = "all", safesearch } = args;
+      const results = await performWebSearch(query, pageno, time_range, language, safesearch);
       return {
         content: [{ type: "text", text: results }],
         isError: false,

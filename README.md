@@ -12,6 +12,7 @@ An [MCP server](https://modelcontextprotocol.io/introduction) implementation tha
 - **Pagination**: Control which page of results to retrieve.
 - **Time Filtering**: Filter results by time range (day, month, year).
 - **Language Selection**: Filter results by preferred language.
+- **Safe Search**: Control content filtering level for search results.
 
 ## Tools
 
@@ -22,6 +23,7 @@ An [MCP server](https://modelcontextprotocol.io/introduction) implementation tha
     - `pageno` (number, optional): Search page number, starts at 1 (default 1)
     - `time_range` (string, optional): Filter results by time range - one of: "day", "month", "year" (default: none)
     - `language` (string, optional): Language code for results (e.g., "en", "fr", "de") or "all" (default: "all")
+    - `safesearch` (number, optional): Safe search filter level (0: None, 1: Moderate, 2: Strict) (default: instance setting)
 
 ## Configuration
 
