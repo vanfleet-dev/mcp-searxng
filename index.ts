@@ -19,7 +19,8 @@ const WEB_SEARCH_TOOL: Tool = {
     properties: {
       query: {
         type: "string",
-        description: "Search query",
+        description:
+          "The search query. This string is passed to external search services.",
       },
       pageno: {
         type: "number",
@@ -34,12 +35,14 @@ const WEB_SEARCH_TOOL: Tool = {
       },
       language: {
         type: "string",
-        description: "Language code for search results (e.g., 'en', 'fr', 'de'). Default is instance-dependent.",
+        description:
+          "Language code for search results (e.g., 'en', 'fr', 'de'). Default is instance-dependent.",
         default: "all",
       },
       safesearch: {
         type: "number",
-        description: "Safe search filter level (0: None, 1: Moderate, 2: Strict)",
+        description:
+          "Safe search filter level (0: None, 1: Moderate, 2: Strict)",
         enum: [0, 1, 2],
         default: undefined,
       },
@@ -69,7 +72,7 @@ const READ_URL_TOOL: Tool = {
 const server = new Server(
   {
     name: "ihor-sokoliuk/mcp-searxng",
-    version: "0.3.0",
+    version: "0.3.1",
   },
   {
     capabilities: {
@@ -89,7 +92,13 @@ interface SearXNGWeb {
 
 function isSearXNGWebSearchArgs(
   args: unknown
-): args is { query: string; pageno?: number; time_range?: string; language?: string; safesearch?: number } {
+): args is {
+  query: string;
+  pageno?: number;
+  time_range?: string;
+  language?: string;
+  safesearch?: number;
+} {
   return (
     typeof args === "object" &&
     args !== null &&
@@ -110,7 +119,7 @@ async function performWebSearch(
   url.searchParams.set("q", query);
   url.searchParams.set("format", "json");
   url.searchParams.set("pageno", pageno.toString());
-  
+
   if (time_range && ["day", "month", "year"].includes(time_range)) {
     url.searchParams.set("time_range", time_range);
   }
@@ -118,7 +127,7 @@ async function performWebSearch(
   if (language && language !== "all") {
     url.searchParams.set("language", language);
   }
-  
+
   if (safesearch !== undefined && [0, 1, 2].includes(safesearch)) {
     url.searchParams.set("safesearch", safesearch.toString());
   }
@@ -201,8 +210,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
       if (!isSearXNGWebSearchArgs(args)) {
         throw new Error("Invalid arguments for searxng_web_search");
       }
-      const { query, pageno = 1, time_range = "", language = "all", safesearch } = args;
-      const results = await performWebSearch(query, pageno, time_range, language, safesearch);
+      const {
+        query,
+        pageno = 1,
+        time_range = "",
+        language = "all",
+        safesearch,
+      } = args;
+      const results = await performWebSearch(
+        query,
+        pageno,
+        time_range,
+        language,
+        safesearch
+      );
       return {
         content: [{ type: "text", text: results }],
         isError: false,

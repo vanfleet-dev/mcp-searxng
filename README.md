@@ -19,7 +19,7 @@ An [MCP server](https://modelcontextprotocol.io/introduction) implementation tha
 - **searxng_web_search**
   - Execute web searches with pagination
   - Inputs:
-    - `query` (string): Search terms
+    - `query` (string): The search query. This string is passed to external search services.
     - `pageno` (number, optional): Search page number, starts at 1 (default 1)
     - `time_range` (string, optional): Filter results by time range - one of: "day", "month", "year" (default: none)
     - `language` (string, optional): Language code for results (e.g., "en", "fr", "de") or "all" (default: "all")
