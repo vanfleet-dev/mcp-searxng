@@ -32,6 +32,11 @@ const WEB_SEARCH_TOOL: Tool = {
         enum: ["", "day", "month", "year"],
         default: "",
       },
+      language: {
+        type: "string",
+        description: "Language code for search results (e.g., 'en', 'fr', 'de'). Default is instance-dependent.",
+        default: "all",
+      },
     },
     required: ["query"],
   },
@@ -78,7 +83,7 @@ interface SearXNGWeb {
 
 function isSearXNGWebSearchArgs(
   args: unknown
-): args is { query: string; pageno?: number; time_range?: string } {
+): args is { query: string; pageno?: number; time_range?: string; language?: string } {
   return (
     typeof args === "object" &&
     args !== null &&
@@ -90,7 +95,8 @@ function isSearXNGWebSearchArgs(
 async function performWebSearch(
   query: string,
   pageno: number = 1,
-  time_range: string = ""
+  time_range: string = "",
+  language: string = "all"
 ) {
   const searxngUrl = process.env.SEARXNG_URL || "http://localhost:8080";
   const url = new URL(`${searxngUrl}/search`);
@@ -100,6 +106,10 @@ async function performWebSearch(
   
   if (time_range && ["day", "month", "year"].includes(time_range)) {
     url.searchParams.set("time_range", time_range);
+  }
+
+  if (language && language !== "all") {
+    url.searchParams.set("language", language);
   }
 
   const response = await fetch(url.toString(), {
@@ -180,8 +190,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
       if (!isSearXNGWebSearchArgs(args)) {
         throw new Error("Invalid arguments for searxng_web_search");
       }
-      const { query, pageno = 1, time_range = "" } = args;
-      const results = await performWebSearch(query, pageno, time_range);
+      const { query, pageno = 1, time_range = "", language = "all" } = args;
+      const results = await performWebSearch(query, pageno, time_range, language);
       return {
         content: [{ type: "text", text: results }],
         isError: false,

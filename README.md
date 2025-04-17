@@ -11,6 +11,7 @@ An [MCP server](https://modelcontextprotocol.io/introduction) implementation tha
 - **Web Search**: General queries, news, articles, with pagination.
 - **Pagination**: Control which page of results to retrieve.
 - **Time Filtering**: Filter results by time range (day, month, year).
+- **Language Selection**: Filter results by preferred language.
 
 ## Tools
 
@@ -20,6 +21,7 @@ An [MCP server](https://modelcontextprotocol.io/introduction) implementation tha
     - `query` (string): Search terms
     - `pageno` (number, optional): Search page number, starts at 1 (default 1)
     - `time_range` (string, optional): Filter results by time range - one of: "day", "month", "year" (default: none)
+    - `language` (string, optional): Language code for results (e.g., "en", "fr", "de") or "all" (default: "all")
 
 ## Configuration
 
