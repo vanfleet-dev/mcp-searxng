@@ -1,4 +1,4 @@
-FROM node:22.12-alpine AS builder
+FROM node:slim AS builder
 
 # Must be entire project because `prepare` script is run during `npm install` and requires all files.
 COPY ./ /app
@@ -8,7 +8,7 @@ WORKDIR /app
 
 RUN --mount=type=cache,target=/root/.npm npm install
 
-FROM node:22-alpine AS release
+FROM node:slim AS release
 
 WORKDIR /app
 
