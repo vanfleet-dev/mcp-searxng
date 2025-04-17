@@ -11,14 +11,13 @@ on:
 
 jobs:
   auto-version:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }} # Use a Personal Access Token with repo scope
-          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,54 +25,38 @@ jobs:
           node-version: '22'
       
       - name: Configure Git
-        shell: pwsh
         run: |
-          # PowerShell syntax for Windows runner
-          if (Test-Path ".git") {
-            git config --local user.email "github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
-          } else {
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git config --global user.name "github-actions[bot]"
-            Write-Host "Current directory: $(Get-Location)"
-            Get-ChildItem -Force
-          }
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
       
       - name: Get current version
         id: current_version
-        shell: pwsh
-        run: |
-          $version = node -p "require('./package.json').version"
-          echo "version=$version" >> $env:GITHUB_OUTPUT
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
       
       - name: Determine if patch, minor, or major bump
         id: bump_type
-        shell: pwsh
         run: |
-          $COMMIT_MSG = git log -1 --pretty=%B
-          if ($COMMIT_MSG -like "*BREAKING CHANGE*" -or $COMMIT_MSG -like "*#major*") {
-            echo "type=major" >> $env:GITHUB_OUTPUT
-          } elseif ($COMMIT_MSG -like "*feat*" -or $COMMIT_MSG -like "*#minor*") {
-            echo "type=minor" >> $env:GITHUB_OUTPUT
-          } else {
-            echo "type=patch" >> $env:GITHUB_OUTPUT
-          }
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if [[ "$COMMIT_MSG" == *"BREAKING CHANGE"* || "$COMMIT_MSG" == *"#major"* ]]; then
+            echo "type=major" >> $GITHUB_OUTPUT
+          elif [[ "$COMMIT_MSG" == *"feat"* || "$COMMIT_MSG" == *"#minor"* ]]; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
       
       - name: Bump version and push tag
         id: bump_version
-        shell: pwsh
         run: |
           npm version ${{ steps.bump_type.outputs.type }} -m "Bump version to %s [skip ci]"
-          $NEW_VERSION = node -p "require('./package.json').version"
-          echo "new_version=$NEW_VERSION" >> $env:GITHUB_OUTPUT
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           git push
           git push --tags
       
       - name: Set tag message
-        shell: pwsh
         run: |
-          $COMMIT_HASH = git rev-parse --short HEAD
-          echo "Released v${{ steps.bump_version.outputs.new_version }} automatically from commit $COMMIT_HASH" > tag_message.txt
+          echo "Released v${{ steps.bump_version.outputs.new_version }} automatically from commit $(git rev-parse --short HEAD)" > tag_message.txt
           git tag -a -f "v${{ steps.bump_version.outputs.new_version }}" -F tag_message.txt
           git push --tags --force
 
