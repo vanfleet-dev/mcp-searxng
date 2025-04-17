@@ -69,7 +69,7 @@ const READ_URL_TOOL: Tool = {
 const server = new Server(
   {
     name: "ihor-sokoliuk/mcp-searxng",
-    version: "0.2.2",
+    version: "0.3.0",
   },
   {
     capabilities: {
