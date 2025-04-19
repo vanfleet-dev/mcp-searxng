@@ -48,7 +48,7 @@ To install SearxNG Server for Claude Desktop automatically via [Smithery](https:
 npx -y @smithery/cli install @ihor-sokoliuk/server-searxng --client claude
 ```
 
-### NPX
+### [NPX](https://www.npmjs.com/package/mcp-searxng)
 
 ```json
 {
@@ -67,7 +67,7 @@ npx -y @smithery/cli install @ihor-sokoliuk/server-searxng --client claude
 }
 ```
 
-### NPM
+### [NPM](https://www.npmjs.com/package/mcp-searxng)
 
 ```bash
 npm install -g mcp-searxng

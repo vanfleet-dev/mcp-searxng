@@ -6,6 +6,18 @@
     "author": "Ihor Sokoliuk (https://github.com/ihor-sokoliuk)",
     "homepage": "https://github.com/ihor-sokoliuk/mcp-searxng",
     "bugs": "https://github.com/ihor-sokoliuk/mcp-searxng/issues",
+    "keywords": [
+        "mcp",
+        "modelcontextprotocol",
+        "searxng",
+        "search",
+        "web-search",
+        "claude",
+        "ai",
+        "pagination",
+        "smithery",
+        "url-reader"
+    ],
     "type": "module",
     "bin": {
         "mcp-searxng": "dist/index.js"
