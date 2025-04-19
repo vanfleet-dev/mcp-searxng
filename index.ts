@@ -20,7 +20,7 @@ const WEB_SEARCH_TOOL: Tool = {
       query: {
         type: "string",
         description:
-          "The search query. This string is passed to external search services.",
+          "The search query. This is the main input for the web search",
       },
       pageno: {
         type: "number",
@@ -72,7 +72,7 @@ const READ_URL_TOOL: Tool = {
 const server = new Server(
   {
     name: "ihor-sokoliuk/mcp-searxng",
-    version: "0.3.1",
+    version: "0.3.3",
   },
   {
     capabilities: {
@@ -90,9 +90,7 @@ interface SearXNGWeb {
   }>;
 }
 
-function isSearXNGWebSearchArgs(
-  args: unknown
-): args is {
+function isSearXNGWebSearchArgs(args: unknown): args is {
   query: string;
   pageno?: number;
   time_range?: string;
