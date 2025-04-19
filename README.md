@@ -90,7 +90,7 @@ And then in your MCP config file:
 
 ### Docker
 
-#### Using Pre-built Image from Docker Hub
+#### Using [Pre-built Image from Docker Hub](https://hub.docker.com/r/isokoliuk/mcp-searxng)
 
 ```bash
 docker pull isokoliuk/mcp-searxng:latest
