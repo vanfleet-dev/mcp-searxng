@@ -25,6 +25,11 @@ An [MCP server](https://modelcontextprotocol.io/introduction) implementation tha
     - `language` (string, optional): Language code for results (e.g., "en", "fr", "de") or "all" (default: "all")
     - `safesearch` (number, optional): Safe search filter level (0: None, 1: Moderate, 2: Strict) (default: instance setting)
 
+- **web_url_read**
+  - Read and convert the content from a URL to markdown
+  - Inputs:
+    - `url` (string): The URL to fetch and process
+
 ## Configuration
 
 ### Setting the SEARXNG_URL
