@@ -77,7 +77,16 @@ const server = new Server(
   {
     capabilities: {
       resources: {},
-      tools: {},
+      tools: {
+        searxng_web_search: {
+          description: WEB_SEARCH_TOOL.description,
+          schema: WEB_SEARCH_TOOL.inputSchema,
+        },
+        web_url_read: {
+          description: READ_URL_TOOL.description,
+          schema: READ_URL_TOOL.inputSchema,
+        },
+      },
     },
   }
 );
