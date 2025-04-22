@@ -8,18 +8,6 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { NodeHtmlMarkdown } from "node-html-markdown";
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Read package.json to get the version
-const packageJson = JSON.parse(
-  readFileSync(join(__dirname, "package.json"), "utf-8")
-);
-const packageVersion = packageJson.version;
 
 const WEB_SEARCH_TOOL: Tool = {
   name: "searxng_web_search",
@@ -84,7 +72,7 @@ const READ_URL_TOOL: Tool = {
 const server = new Server(
   {
     name: "ihor-sokoliuk/mcp-searxng",
-    version: packageVersion,
+    version: "v0.4.3",
   },
   {
     capabilities: {
