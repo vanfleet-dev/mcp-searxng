@@ -118,11 +118,11 @@ function isSearXNGWebSearchArgs(args: unknown): args is {
 }
 
 async function performWebSearch(
-    query: string,
-    pageno: number = 1,
-    time_range?: string,
-    language: string = "all",
-    safesearch?: string,
+  query: string,
+  pageno: number = 1,
+  time_range?: string,
+  language: string = "all",
+  safesearch?: string
 ) {
   const searxngUrl = process.env.SEARXNG_URL || "http://localhost:8080";
   const url = new URL(`${searxngUrl}/search`);
@@ -131,10 +131,10 @@ async function performWebSearch(
   url.searchParams.set("pageno", pageno.toString());
 
   if (
-      time_range !== undefined &&
-      ["day", "month", "year"].includes(time_range)
+    time_range !== undefined &&
+    ["day", "month", "year"].includes(time_range)
   ) {
-      url.searchParams.set("time_range", time_range);
+    url.searchParams.set("time_range", time_range);
   }
 
   if (language && language !== "all") {
@@ -142,7 +142,7 @@ async function performWebSearch(
   }
 
   if (safesearch !== undefined && ["0", "1", "2"].includes(safesearch)) {
-      url.searchParams.set("safesearch", safesearch);
+    url.searchParams.set("safesearch", safesearch);
   }
 
   const response = await fetch(url.toString(), {
