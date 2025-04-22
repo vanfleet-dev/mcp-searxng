@@ -9,6 +9,9 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 
+// Use a static version string that will be updated by the version script
+const packageVersion = "0.4.3";
+
 const WEB_SEARCH_TOOL: Tool = {
   name: "searxng_web_search",
   description:
@@ -72,7 +75,7 @@ const READ_URL_TOOL: Tool = {
 const server = new Server(
   {
     name: "ihor-sokoliuk/mcp-searxng",
-    version: "v0.4.3",
+    version: packageVersion,
   },
   {
     capabilities: {
