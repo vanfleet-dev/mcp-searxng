@@ -150,6 +150,11 @@ Add this to your `claude_desktop_config.json`:
 }
 ```
 
+## Running evals
+
+```bash
+npx mcp-eval evals.ts index.ts
+```
 
 ## License
 
