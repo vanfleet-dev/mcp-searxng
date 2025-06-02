@@ -34,7 +34,6 @@ const WEB_SEARCH_TOOL: Tool = {
         type: "string",
         description: "Time range of search (day, month, year)",
         enum: ["day", "month", "year"],
-        default: "",
       },
       language: {
         type: "string",
