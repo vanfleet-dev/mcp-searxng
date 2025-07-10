@@ -6,6 +6,10 @@
     "author": "Ihor Sokoliuk (https://github.com/ihor-sokoliuk)",
     "homepage": "https://github.com/ihor-sokoliuk/mcp-searxng",
     "bugs": "https://github.com/ihor-sokoliuk/mcp-searxng/issues",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ihor-sokoliuk/mcp-searxng"
+    },
     "keywords": [
         "mcp",
         "modelcontextprotocol",
@@ -32,6 +36,7 @@
         "build": "tsc && shx chmod +x dist/*.js",
         "prepare": "npm run build",
         "watch": "tsc --watch",
+        "inspector": "DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector node dist/index.js",
         "postversion": "node scripts/update-version.js && git add index.ts && git commit --amend --no-edit"
     },
     "dependencies": {
