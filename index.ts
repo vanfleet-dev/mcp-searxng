@@ -10,7 +10,7 @@ import {
 import { NodeHtmlMarkdown } from "node-html-markdown";
 
 // Use a static version string that will be updated by the version script
-const packageVersion = "0.4.6";
+const packageVersion = "0.5.1";
 
 const WEB_SEARCH_TOOL: Tool = {
   name: "searxng_web_search",
@@ -34,7 +34,6 @@ const WEB_SEARCH_TOOL: Tool = {
         type: "string",
         description: "Time range of search (day, month, year)",
         enum: ["day", "month", "year"],
-        default: "",
       },
       language: {
         type: "string",
@@ -145,9 +144,24 @@ async function performWebSearch(
     url.searchParams.set("safesearch", safesearch);
   }
 
-  const response = await fetch(url.toString(), {
-    method: "GET",
-  });
+  // Prepare request options with headers
+  const requestOptions: RequestInit = {
+    method: "GET"
+  };
+
+  // Add basic authentication if credentials are provided
+  const username = process.env.AUTH_USERNAME;
+  const password = process.env.AUTH_PASSWORD;
+
+  if (username && password) {
+    const base64Auth = Buffer.from(`${username}:${password}`).toString('base64');
+    requestOptions.headers = {
+      ...requestOptions.headers,
+      'Authorization': `Basic ${base64Auth}`
+    };
+  }
+
+  const response = await fetch(url.toString(), requestOptions);
 
   if (!response.ok) {
     throw new Error(
