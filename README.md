@@ -162,7 +162,7 @@ Add this to your `claude_desktop_config.json`:
 The evals package loads an mcp client that then runs the index.ts file, so there is no need to rebuild between tests. You can see the full documentation [here](https://www.mcpevals.io/docs).
 
 ```bash
-SEARXNG_URL=SEARXNG_URL OPENAI_API_KEY=your-key  npx mcp-eval evals.ts index.ts
+SEARXNG_URL=SEARXNG_URL OPENAI_API_KEY=your-key npx mcp-eval evals.ts index.ts
 ```
 
 ## License
