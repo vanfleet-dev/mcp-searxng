@@ -98,6 +98,7 @@ interface SearXNGWeb {
     title: string;
     content: string;
     url: string;
+    score: number;
   }>;
 }
 
@@ -177,10 +178,11 @@ async function performWebSearch(
     title: result.title || "",
     content: result.content || "",
     url: result.url || "",
+    score: result.score || 0,
   }));
 
   return results
-    .map((r) => `Title: ${r.title}\nDescription: ${r.content}\nURL: ${r.url}`)
+    .map((r) => `Title: ${r.title}\nDescription: ${r.content}\nURL: ${r.url}\nRelevance Score: ${r.score.toFixed(3)}`)
     .join("\n\n");
 }
 
