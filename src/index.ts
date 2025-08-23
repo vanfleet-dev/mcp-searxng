@@ -12,7 +12,7 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 import { HttpProxyAgent } from "http-proxy-agent";
 
 // Use a static version string that will be updated by the version script
-const packageVersion = "0.5.2";
+const packageVersion = "0.6.0";
 
 const WEB_SEARCH_TOOL: Tool = {
   name: "searxng_web_search",
@@ -126,14 +126,38 @@ function createProxyAgent(targetUrl: string) {
     return undefined;
   }
 
+  // Validate and normalize proxy URL
+  let parsedProxyUrl: URL;
+  try {
+    parsedProxyUrl = new URL(proxyUrl);
+  } catch (error) {
+    throw new Error(
+      `Invalid proxy URL: ${proxyUrl}. ` +
+      "Please provide a valid URL (e.g., http://proxy:8080 or http://user:pass@proxy:8080)"
+    );
+  }
+
+  // Ensure proxy protocol is supported
+  if (!['http:', 'https:'].includes(parsedProxyUrl.protocol)) {
+    throw new Error(
+      `Unsupported proxy protocol: ${parsedProxyUrl.protocol}. ` +
+      "Only HTTP and HTTPS proxies are supported."
+    );
+  }
+
+  // Reconstruct base proxy URL preserving credentials but removing any path
+  const auth = parsedProxyUrl.username ? 
+    (parsedProxyUrl.password ? `${parsedProxyUrl.username}:${parsedProxyUrl.password}@` : `${parsedProxyUrl.username}@`) : 
+    '';
+  const normalizedProxyUrl = `${parsedProxyUrl.protocol}//${auth}${parsedProxyUrl.host}`;
+
   // Determine if target URL is HTTPS
   const isHttps = targetUrl.startsWith('https:');
 
   // Create appropriate agent based on target protocol
-  // Supports proxy URL formats: http://proxy:port, https://proxy:port, http://user:pass@proxy:port
   return isHttps
-    ? new HttpsProxyAgent(proxyUrl)
-    : new HttpProxyAgent(proxyUrl);
+    ? new HttpsProxyAgent(normalizedProxyUrl)
+    : new HttpProxyAgent(normalizedProxyUrl);
 }
 
 async function performWebSearch(
