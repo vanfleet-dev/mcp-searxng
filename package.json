@@ -23,6 +23,7 @@
         "url-reader"
     ],
     "type": "module",
+    "module": "./src/index.ts",
     "bin": {
         "mcp-searxng": "dist/index.js"
     },
