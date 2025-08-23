@@ -37,7 +37,7 @@
         "prepare": "npm run build",
         "watch": "tsc --watch",
         "inspector": "DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector node dist/index.js",
-        "postversion": "node scripts/update-version.js && git add index.ts && git commit --amend --no-edit"
+        "postversion": "node scripts/update-version.js && git add src/index.ts && git commit --amend --no-edit"
     },
     "dependencies": {
         "mcp-evals": "^1.0.18",

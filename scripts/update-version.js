@@ -15,7 +15,7 @@ const packageJson = require('../package.json');
 const version = packageJson.version;
 
 // Path to index.ts
-const indexPath = path.join(__dirname, '..', 'index.ts');
+const indexPath = path.join(__dirname, '..', 'src', 'index.ts');
 
 // Read the file
 let content = fs.readFileSync(indexPath, 'utf8');
