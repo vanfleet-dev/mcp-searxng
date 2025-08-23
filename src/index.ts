@@ -8,6 +8,8 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { NodeHtmlMarkdown } from "node-html-markdown";
+import { HttpsProxyAgent } from "https-proxy-agent";
+import { HttpProxyAgent } from "http-proxy-agent";
 
 // Use a static version string that will be updated by the version script
 const packageVersion = "0.5.2";
@@ -117,6 +119,23 @@ function isSearXNGWebSearchArgs(args: unknown): args is {
   );
 }
 
+function createProxyAgent(targetUrl: string) {
+  const proxyUrl = process.env.HTTP_PROXY || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.https_proxy;
+  
+  if (!proxyUrl) {
+    return undefined;
+  }
+
+  // Determine if target URL is HTTPS
+  const isHttps = targetUrl.startsWith('https:');
+  
+  // Create appropriate agent based on target protocol
+  // Supports proxy URL formats: http://proxy:port, https://proxy:port, http://user:pass@proxy:port
+  return isHttps 
+    ? new HttpsProxyAgent(proxyUrl)
+    : new HttpProxyAgent(proxyUrl);
+}
+
 async function performWebSearch(
   query: string,
   pageno: number = 1,
@@ -124,7 +143,15 @@ async function performWebSearch(
   language: string = "all",
   safesearch?: string
 ) {
-  const searxngUrl = process.env.SEARXNG_URL || "http://localhost:8080";
+  const searxngUrl = process.env.SEARXNG_URL;
+  
+  if (!searxngUrl) {
+    throw new Error(
+      "SEARXNG_URL environment variable is required to perform web searches. " +
+      "Please set it to your SearXNG instance URL (e.g., http://localhost:8080)"
+    );
+  }
+  
   const url = new URL(`${searxngUrl}/search`);
   url.searchParams.set("q", query);
   url.searchParams.set("format", "json");
@@ -149,6 +176,12 @@ async function performWebSearch(
   const requestOptions: RequestInit = {
     method: "GET"
   };
+
+  // Add proxy agent if proxy is configured
+  const proxyAgent = createProxyAgent(url.toString());
+  if (proxyAgent) {
+    (requestOptions as any).agent = proxyAgent;
+  }
 
   // Add basic authentication if credentials are provided
   const username = process.env.AUTH_USERNAME;
@@ -195,10 +228,19 @@ async function fetchAndConvertToMarkdown(
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    // Fetch the URL with the abort signal
-    const response = await fetch(url, {
+    // Prepare request options with proxy support
+    const requestOptions: RequestInit = {
       signal: controller.signal,
-    });
+    };
+
+    // Add proxy agent if proxy is configured
+    const proxyAgent = createProxyAgent(url);
+    if (proxyAgent) {
+      (requestOptions as any).agent = proxyAgent;
+    }
+
+    // Fetch the URL with the abort signal
+    const response = await fetch(url, requestOptions);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch the URL: ${response.statusText}`);

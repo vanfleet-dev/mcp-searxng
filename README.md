@@ -45,6 +45,77 @@ If you are using a password protected SearxNG instance you can set a username an
 - Set the `AUTH_USERNAME` environmental variable to your username
 - Set the `AUTH_PASSWORD` environmental variable to your password
 
+### Proxy Support
+
+The server supports HTTP and HTTPS proxies through environment variables. This is useful when running behind corporate firewalls or when you need to route traffic through a specific proxy server.
+
+#### Proxy Environment Variables
+
+Set one or more of these environment variables to configure proxy support:
+
+- `HTTP_PROXY`: Proxy URL for HTTP requests
+- `HTTPS_PROXY`: Proxy URL for HTTPS requests  
+- `http_proxy`: Alternative lowercase version for HTTP requests
+- `https_proxy`: Alternative lowercase version for HTTPS requests
+
+#### Proxy URL Formats
+
+The proxy URL can be in any of these formats:
+
+```bash
+# Basic proxy
+export HTTP_PROXY=http://proxy.company.com:8080
+export HTTPS_PROXY=http://proxy.company.com:8080
+
+# Proxy with authentication
+export HTTP_PROXY=http://username:password@proxy.company.com:8080
+export HTTPS_PROXY=https://username:password@proxy.company.com:8080
+```
+
+#### Usage Examples
+
+**With NPX:**
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "npx",
+      "args": ["-y", "mcp-searxng"],
+      "env": {
+        "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL",
+        "HTTP_PROXY": "http://proxy.company.com:8080",
+        "HTTPS_PROXY": "http://proxy.company.com:8080"
+      }
+    }
+  }
+}
+```
+
+**With Docker:**
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "-e", "SEARXNG_URL",
+        "-e", "HTTP_PROXY",
+        "-e", "HTTPS_PROXY",
+        "isokoliuk/mcp-searxng:latest"
+      ],
+      "env": {
+        "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL",
+        "HTTP_PROXY": "http://proxy.company.com:8080",
+        "HTTPS_PROXY": "http://proxy.company.com:8080"
+      }
+    }
+  }
+}
+```
+
+**Note:** If no proxy environment variables are set, the server will make direct connections as normal.
+
 ### Usage with Claude Desktop
 
 ### Installing via Smithery
