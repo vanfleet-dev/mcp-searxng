@@ -121,17 +121,17 @@ function isSearXNGWebSearchArgs(args: unknown): args is {
 
 function createProxyAgent(targetUrl: string) {
   const proxyUrl = process.env.HTTP_PROXY || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.https_proxy;
-  
+
   if (!proxyUrl) {
     return undefined;
   }
 
   // Determine if target URL is HTTPS
   const isHttps = targetUrl.startsWith('https:');
-  
+
   // Create appropriate agent based on target protocol
   // Supports proxy URL formats: http://proxy:port, https://proxy:port, http://user:pass@proxy:port
-  return isHttps 
+  return isHttps
     ? new HttpsProxyAgent(proxyUrl)
     : new HttpProxyAgent(proxyUrl);
 }
@@ -144,15 +144,28 @@ async function performWebSearch(
   safesearch?: string
 ) {
   const searxngUrl = process.env.SEARXNG_URL;
-  
+
   if (!searxngUrl) {
     throw new Error(
       "SEARXNG_URL environment variable is required to perform web searches. " +
       "Please set it to your SearXNG instance URL (e.g., http://localhost:8080)"
     );
   }
-  
-  const url = new URL(`${searxngUrl}/search`);
+
+  // Validate that searxngUrl is a valid URL
+  try {
+    new URL(searxngUrl);
+  } catch (error) {
+    throw new Error(
+      `Invalid SEARXNG_URL environment variable: ${searxngUrl}. ` +
+      "Please provide a valid URL (e.g., http://localhost:8080 or https://searxng.example.com)"
+    );
+  }
+
+  // Construct the search URL
+  const baseUrl = new URL(searxngUrl).origin;
+  const url = new URL(`${baseUrl}/search`);
+
   url.searchParams.set("q", query);
   url.searchParams.set("format", "json");
   url.searchParams.set("pageno", pageno.toString());
@@ -199,8 +212,7 @@ async function performWebSearch(
 
   if (!response.ok) {
     throw new Error(
-      `SearXNG API error: ${response.status} ${
-        response.statusText
+      `SearXNG API error: ${response.status} ${response.statusText
       }\n${await response.text()}`
     );
   }
@@ -319,9 +331,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
       content: [
         {
           type: "text",
-          text: `Error: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
+          text: `Error: ${error instanceof Error ? error.message : String(error)
+            }`,
         },
       ],
       isError: true,
