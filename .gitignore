@@ -2,6 +2,9 @@
 dist
 build
 
+# Test outputs
+coverage
+
 # Dependencies
 node_modules
 package-lock.json
