@@ -10,6 +10,22 @@ import {
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { HttpProxyAgent } from "http-proxy-agent";
+import {
+  createConfigurationError,
+  createNetworkError,
+  createServerError,
+  createJSONError,
+  createDataError,
+  createNoResultsMessage,
+  createURLFormatError,
+  createContentError,
+  createConversionError,
+  createTimeoutError,
+  createEmptyContentWarning,
+  createUnexpectedError,
+  validateEnvironment as validateEnv,
+  type ErrorContext
+} from "./error-handler.js";
 
 // Use a static version string that will be updated by the version script
 const packageVersion = "0.6.0";
@@ -170,24 +186,23 @@ async function performWebSearch(
   const searxngUrl = process.env.SEARXNG_URL;
 
   if (!searxngUrl) {
-    throw new Error(
-      "SEARXNG_URL environment variable is required to perform web searches. " +
-      "Please set it to your SearXNG instance URL (e.g., http://localhost:8080)"
+    throw createConfigurationError(
+      "SEARXNG_URL not set. Set it to your SearXNG instance (e.g., http://localhost:8080 or https://search.example.com)"
     );
   }
 
   // Validate that searxngUrl is a valid URL
+  let parsedUrl: URL;
   try {
-    new URL(searxngUrl);
+    parsedUrl = new URL(searxngUrl);
   } catch (error) {
-    throw new Error(
-      `Invalid SEARXNG_URL environment variable: ${searxngUrl}. ` +
-      "Please provide a valid URL (e.g., http://localhost:8080 or https://searxng.example.com)"
+    throw createConfigurationError(
+      `Invalid SEARXNG_URL format: ${searxngUrl}. Use format: http://localhost:8080`
     );
   }
 
   // Construct the search URL
-  const baseUrl = new URL(searxngUrl).origin;
+  const baseUrl = parsedUrl.origin;
   const url = new URL(`${baseUrl}/search`);
 
   url.searchParams.set("q", query);
@@ -232,23 +247,66 @@ async function performWebSearch(
     };
   }
 
-  const response = await fetch(url.toString(), requestOptions);
-
-  if (!response.ok) {
-    throw new Error(
-      `SearXNG API error: ${response.status} ${response.statusText
-      }\n${await response.text()}`
-    );
+  // Fetch with enhanced error handling
+  let response: Response;
+  try {
+    response = await fetch(url.toString(), requestOptions);
+  } catch (error: any) {
+    const context: ErrorContext = {
+      url: url.toString(),
+      searxngUrl,
+      proxyAgent: !!proxyAgent,
+      username
+    };
+    throw createNetworkError(error, context);
   }
 
-  const data = (await response.json()) as SearXNGWeb;
+  if (!response.ok) {
+    let responseBody: string;
+    try {
+      responseBody = await response.text();
+    } catch {
+      responseBody = '[Could not read response body]';
+    }
 
-  const results = (data.results || []).map((result) => ({
+    const context: ErrorContext = {
+      url: url.toString(),
+      searxngUrl
+    };
+    throw createServerError(response.status, response.statusText, responseBody, context);
+  }
+
+  // Parse JSON response
+  let data: SearXNGWeb;
+  try {
+    data = (await response.json()) as SearXNGWeb;
+  } catch (error: any) {
+    let responseText: string;
+    try {
+      responseText = await response.text();
+    } catch {
+      responseText = '[Could not read response text]';
+    }
+
+    const context: ErrorContext = { url: url.toString() };
+    throw createJSONError(responseText, context);
+  }
+
+  if (!data.results) {
+    const context: ErrorContext = { url: url.toString(), query };
+    throw createDataError(data, context);
+  }
+
+  const results = data.results.map((result) => ({
     title: result.title || "",
     content: result.content || "",
     url: result.url || "",
     score: result.score || 0,
   }));
+
+  if (results.length === 0) {
+    return createNoResultsMessage(query);
+  }
 
   return results
     .map((r) => `Title: ${r.title}\nDescription: ${r.content}\nURL: ${r.url}\nRelevance Score: ${r.score.toFixed(3)}`)
@@ -259,6 +317,14 @@ async function fetchAndConvertToMarkdown(
   url: string,
   timeoutMs: number = 10000
 ) {
+  // Validate URL format
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url);
+  } catch (error) {
+    throw createURLFormatError(url);
+  }
+
   // Create an AbortController instance
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -275,26 +341,71 @@ async function fetchAndConvertToMarkdown(
       (requestOptions as any).agent = proxyAgent;
     }
 
-    // Fetch the URL with the abort signal
-    const response = await fetch(url, requestOptions);
+    let response: Response;
+    try {
+      // Fetch the URL with the abort signal
+      response = await fetch(url, requestOptions);
+    } catch (error: any) {
+      const context: ErrorContext = {
+        url,
+        proxyAgent: !!proxyAgent,
+        timeout: timeoutMs
+      };
+      throw createNetworkError(error, context);
+    }
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch the URL: ${response.statusText}`);
+      let responseBody: string;
+      try {
+        responseBody = await response.text();
+      } catch {
+        responseBody = '[Could not read response body]';
+      }
+
+      const context: ErrorContext = { url };
+      throw createServerError(response.status, response.statusText, responseBody, context);
     }
 
     // Retrieve HTML content
-    const htmlContent = await response.text();
+    let htmlContent: string;
+    try {
+      htmlContent = await response.text();
+    } catch (error: any) {
+      throw createContentError(
+        `Failed to read website content: ${error.message || 'Unknown error reading content'}`,
+        url
+      );
+    }
+
+    if (!htmlContent || htmlContent.trim().length === 0) {
+      throw createContentError("Website returned empty content.", url);
+    }
 
     // Convert HTML to Markdown
-    const markdownContent = NodeHtmlMarkdown.translate(htmlContent);
+    let markdownContent: string;
+    try {
+      markdownContent = NodeHtmlMarkdown.translate(htmlContent);
+    } catch (error: any) {
+      throw createConversionError(error, url, htmlContent);
+    }
+
+    if (!markdownContent || markdownContent.trim().length === 0) {
+      return createEmptyContentWarning(url, htmlContent.length, htmlContent);
+    }
 
     return markdownContent;
   } catch (error: any) {
     if (error.name === "AbortError") {
-      throw new Error(`Request timed out after ${timeoutMs}ms`);
+      throw createTimeoutError(timeoutMs, url);
     }
-    console.error("Error:", error.message);
-    throw error;
+    // Re-throw our enhanced errors
+    if (error.name === 'MCPSearXNGError') {
+      throw error;
+    }
+    
+    // Catch any unexpected errors
+    const context: ErrorContext = { url };
+    throw createUnexpectedError(error, context);
   } finally {
     // Clean up the timeout to prevent memory leaks
     clearTimeout(timeoutId);
@@ -365,6 +476,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
 });
 
 async function runServer() {
+  // Brief environment check on startup
+  const envValidation = validateEnv();
+  if (envValidation) {
+    console.error(`⚠️  ${envValidation}`);
+  }
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }
