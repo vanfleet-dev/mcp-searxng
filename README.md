@@ -116,6 +116,48 @@ export HTTPS_PROXY=https://username:password@proxy.company.com:8080
 
 **Note:** If no proxy environment variables are set, the server will make direct connections as normal.
 
+### HTTP Transport (Optional)
+
+The server supports both STDIO (default) and HTTP transports:
+
+#### STDIO Transport (Default)
+- **Best for**: Claude Desktop and most MCP clients
+- **Usage**: Automatic - no additional configuration needed
+
+#### HTTP Transport  
+- **Best for**: Web-based applications and remote MCP clients
+- **Usage**: Set the `MCP_HTTP_PORT` environment variable
+
+**HTTP Server Configuration:**
+
+```json
+{
+  "mcpServers": {
+    "searxng-http": {
+      "command": "mcp-searxng",
+      "env": {
+        "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL",
+        "MCP_HTTP_PORT": "3000"
+      }
+    }
+  }
+}
+```
+
+**HTTP Endpoints:**
+- **MCP Protocol**: `POST/GET/DELETE /mcp` 
+- **Health Check**: `GET /health`
+- **CORS**: Enabled for web clients
+
+**Testing HTTP Server:**
+```bash
+# Start HTTP server
+MCP_HTTP_PORT=3000 SEARXNG_URL=http://localhost:8080 mcp-searxng
+
+# Check health
+curl http://localhost:3000/health
+```
+
 ### Usage with Claude Desktop
 
 ### Installing via Smithery
