@@ -28,7 +28,7 @@ import {
 } from "./error-handler.js";
 
 // Use a static version string that will be updated by the version script
-const packageVersion = "0.6.0";
+const packageVersion = "0.6.1";
 
 const WEB_SEARCH_TOOL: Tool = {
   name: "searxng_web_search",
