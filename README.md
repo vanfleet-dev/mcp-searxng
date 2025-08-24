@@ -236,6 +236,151 @@ The evals package loads an mcp client that then runs the src/index.ts file, so t
 SEARXNG_URL=SEARXNG_URL OPENAI_API_KEY=your-key npx mcp-eval evals.ts src/index.ts
 ```
 
+## For Developers
+
+### Contributing to the Project
+
+We welcome contributions! Here's how to get started:
+
+#### 1. Fork and Clone
+
+```bash
+# Fork the repository on GitHub, then clone your fork
+git clone https://github.com/YOUR_USERNAME/mcp-searxng.git
+cd mcp-searxng
+
+# Add the original repository as upstream
+git remote add upstream https://github.com/ihor-sokoliuk/mcp-searxng.git
+```
+
+#### 2. Development Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Start development with file watching
+npm run watch
+
+# Test the server with inspector
+npm run inspector
+```
+
+#### 3. Development Workflow
+
+1. **Create a feature branch:**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes** in `src/` directory
+   - Main server logic: `src/index.ts`
+   - Error handling: `src/error-handler.ts`
+
+3. **Build and test:**
+   ```bash
+   npm run build
+   npm run inspector
+   ```
+
+4. **Run evals to ensure functionality:**
+   ```bash
+   SEARXNG_URL=http://localhost:8080 OPENAI_API_KEY=your-key npx mcp-eval evals.ts src/index.ts
+   ```
+
+#### 4. Submitting Changes
+
+```bash
+# Commit your changes
+git add .
+git commit -m "feat: description of your changes"
+
+# Push to your fork
+git push origin feature/your-feature-name
+
+# Create a Pull Request on GitHub
+```
+
+### Version Management & Releases
+
+#### For Maintainers: Bumping Versions
+
+The project uses semantic versioning. Use npm's version command to bump versions properly:
+
+```bash
+# Patch release (0.6.0 → 0.6.1) - bug fixes
+npm version patch
+
+# Minor release (0.6.0 → 0.7.0) - new features
+npm version minor
+
+# Major release (0.6.0 → 1.0.0) - breaking changes
+npm version major
+```
+
+The `postversion` script automatically:
+- Updates the version in `src/index.ts`
+- Stages the changes
+- Amends the version commit
+
+#### Creating Release Tags
+
+After bumping the version:
+
+```bash
+# Push the version commit and tag
+git push origin main --tags
+
+# Or push everything at once
+git push origin main --follow-tags
+```
+
+#### Publishing to NPM
+
+```bash
+# Build the project
+npm run build
+
+# Publish to NPM (make sure you're logged in)
+npm publish
+```
+
+#### Docker Release
+
+```bash
+# Build and tag the Docker image
+docker build -t isokoliuk/mcp-searxng:latest .
+docker build -t isokoliuk/mcp-searxng:v$(node -p "require('./package.json').version") .
+
+# Push to Docker Hub
+docker push isokoliuk/mcp-searxng:latest
+docker push isokoliuk/mcp-searxng:v$(node -p "require('./package.json').version")
+```
+
+### Project Structure
+
+```
+mcp-searxng/
+├── src/
+│   ├── index.ts          # Main MCP server implementation
+│   └── error-handler.ts  # Error handling utilities
+├── scripts/
+│   └── update-version.js # Version update script
+├── dist/                 # Built JavaScript files
+├── Dockerfile           # Docker configuration
+├── package.json         # Project configuration
+└── tsconfig.json        # TypeScript configuration
+```
+
+### Coding Guidelines
+
+- Use TypeScript for type safety
+- Follow existing error handling patterns
+- Keep error messages concise but informative
+- Add appropriate emoji indicators for error categories
+- Test changes with the MCP inspector
+- Run evals before submitting PRs
+
 ## License
 
 This MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project repository.
