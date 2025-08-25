@@ -399,21 +399,6 @@ docker push isokoliuk/mcp-searxng:latest
 docker push isokoliuk/mcp-searxng:v$(node -p "require('./package.json').version")
 ```
 
-### Project Structure
-
-```
-mcp-searxng/
-├── src/
-│   ├── index.ts          # Main MCP server implementation
-│   └── error-handler.ts  # Error handling utilities
-├── scripts/
-│   └── update-version.js # Version update script
-├── dist/                 # Built JavaScript files
-├── Dockerfile           # Docker configuration
-├── package.json         # Project configuration
-└── tsconfig.json        # TypeScript configuration
-```
-
 ### Coding Guidelines
 
 - Use TypeScript for type safety
