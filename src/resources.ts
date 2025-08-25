@@ -1,7 +1,6 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { getCurrentLogLevel } from "./logging.js";
-
-const packageVersion = "0.6.1";
+import { packageVersion } from "./index.js";
 
 export function createConfigResource() {
   const config = {

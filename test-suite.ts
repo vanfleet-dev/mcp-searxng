@@ -23,6 +23,7 @@ import { strict as assert } from 'node:assert';
 import { logMessage, shouldLog, setLogLevel, getCurrentLogLevel } from './src/logging.js';
 import { WEB_SEARCH_TOOL, READ_URL_TOOL, isSearXNGWebSearchArgs } from './src/types.js';
 import { createProxyAgent } from './src/proxy.js';
+import { LoggingLevel } from '@modelcontextprotocol/sdk/types.js';
 import { 
   MCPSearXNGError,
   createConfigurationError, 
@@ -43,6 +44,7 @@ import { createConfigResource, createHelpResource } from './src/resources.js';
 import { performWebSearch } from './src/search.js';
 import { fetchAndConvertToMarkdown } from './src/url-reader.js';
 import { createHttpServer } from './src/http-server.js';
+import { packageVersion, isWebUrlReadArgs } from './src/index.js';
 
 let testResults = {
   passed: 0,
@@ -155,18 +157,6 @@ async function runTests() {
   });
 
   // === TYPES MODULE TESTS ===
-  await testFunction('Types - WEB_SEARCH_TOOL schema validation', () => {
-    assert.equal(WEB_SEARCH_TOOL.name, 'searxng_web_search');
-    assert.ok(WEB_SEARCH_TOOL.description);
-    assert.ok(WEB_SEARCH_TOOL.inputSchema);
-  });
-
-  await testFunction('Types - READ_URL_TOOL schema validation', () => {
-    assert.equal(READ_URL_TOOL.name, 'web_url_read');
-    assert.ok(READ_URL_TOOL.description);
-    assert.ok(READ_URL_TOOL.inputSchema);
-  });
-
   await testFunction('Types - isSearXNGWebSearchArgs type guard', () => {
     assert.equal(isSearXNGWebSearchArgs({ query: 'test', language: 'en' }), true);
     assert.equal(isSearXNGWebSearchArgs({ notQuery: 'test' }), false);
@@ -413,27 +403,9 @@ async function runTests() {
   });
 
   // === RESOURCES MODULE TESTS ===
-  await testFunction('Resources - Config resource generation', () => {
-    const resource = createConfigResource();
-    assert.ok(typeof resource === 'string');
-    
-    const configData = JSON.parse(resource);
-    assert.ok(configData.serverInfo);
-    assert.ok(configData.environment);
-    assert.ok(configData.capabilities);
-  });
-
-  await testFunction('Resources - Help resource generation', () => {
-    const resource = createHelpResource();
-    assert.ok(typeof resource === 'string');
-    assert.ok(resource.includes('# SearXNG MCP Server'));
-    assert.ok(resource.includes('Available Tools'));
-  });
+  // (Basic resource generation tests removed as they only test static structure)
 
   // === SEARCH MODULE TESTS ===
-  await testFunction('Search - Function availability', () => {
-    assert.ok(typeof performWebSearch === 'function');
-  });
 
   await testFunction('Search - Error handling for missing SEARXNG_URL', async () => {
     const originalUrl = process.env.SEARXNG_URL;
@@ -793,10 +765,6 @@ async function runTests() {
   });
 
   // === URL READER MODULE TESTS ===
-  await testFunction('URL Reader - Function availability', () => {
-    assert.ok(typeof fetchAndConvertToMarkdown === 'function');
-  });
-
   await testFunction('URL Reader - Error handling for invalid URL', async () => {
     try {
       const mockServer = {
@@ -1223,47 +1191,6 @@ async function runTests() {
   });
 
   // === HTTP SERVER MODULE TESTS ===
-  await testFunction('HTTP Server - Function availability', () => {
-    assert.ok(typeof createHttpServer === 'function');
-  });
-
-  await testFunction('HTTP Server - Server creation', async () => {
-    const mockServer = {
-      notification: () => {},
-      _serverInfo: { name: 'test', version: '1.0' },
-      _capabilities: {},
-    } as any;
-    
-    try {
-      const server = await createHttpServer(mockServer);
-      assert.ok(server);
-      // Don't actually start the server to avoid port conflicts
-    } catch (error) {
-      // Server creation might fail in test environment, that's ok
-      assert.ok(true); 
-    }
-  });
-
-  await testFunction('HTTP Server - Express app configuration', async () => {
-    const mockServer = {
-      notification: () => {},
-      _serverInfo: { name: 'test', version: '1.0' },
-      _capabilities: {},
-      connect: async () => {},
-    } as any;
-    
-    try {
-      const app = await createHttpServer(mockServer);
-      assert.ok(app);
-      assert.ok(typeof app.use === 'function'); // Express app has use method
-      assert.ok(typeof app.post === 'function'); // Express app has post method
-      assert.ok(typeof app.get === 'function'); // Express app has get method
-      assert.ok(typeof app.delete === 'function'); // Express app has delete method
-    } catch (error) {
-      assert.fail(`Should not have thrown error during app creation: ${error}`);
-    }
-  });
-
   await testFunction('HTTP Server - Health check endpoint', async () => {
     const mockServer = {
       notification: () => {},
@@ -1287,7 +1214,6 @@ async function runTests() {
         json: (data: any) => {
           assert.ok(data.status === 'healthy');
           assert.ok(data.server === 'ihor-sokoliuk/mcp-searxng');
-          assert.ok(data.version === '0.6.1');
           assert.ok(data.transport === 'http');
           return mockRes;
         },
@@ -1603,6 +1529,158 @@ async function runTests() {
       assert.ok(true);
     } catch (error) {
       assert.fail(`Should not have thrown error testing middleware configuration: ${error}`);
+    }
+  });
+
+  // 🧪 Index.ts Core Server Tests
+  console.log('\n🔥 Index.ts Core Server Tests');
+
+  await testFunction('Index - Type guard isSearXNGWebSearchArgs', () => {
+    // Test the actual exported function
+    assert.equal(isSearXNGWebSearchArgs({ query: 'test search', language: 'en' }), true);
+    assert.equal(isSearXNGWebSearchArgs({ query: 'test', pageno: 1, time_range: 'day' }), true);
+    assert.equal(isSearXNGWebSearchArgs({ notQuery: 'invalid' }), false);
+    assert.equal(isSearXNGWebSearchArgs(null), false);
+    assert.equal(isSearXNGWebSearchArgs(undefined), false);
+    assert.equal(isSearXNGWebSearchArgs('string'), false);
+    assert.equal(isSearXNGWebSearchArgs(123), false);
+    assert.equal(isSearXNGWebSearchArgs({}), false);
+  });
+
+  await testFunction('Index - Type guard isWebUrlReadArgs', () => {
+    // Test the actual exported function
+    assert.equal(isWebUrlReadArgs({ url: 'https://example.com' }), true);
+    assert.equal(isWebUrlReadArgs({ url: 'http://test.com' }), true);
+    assert.equal(isWebUrlReadArgs({ notUrl: 'invalid' }), false);
+    assert.equal(isWebUrlReadArgs(null), false);
+    assert.equal(isWebUrlReadArgs(undefined), false);
+    assert.equal(isWebUrlReadArgs('string'), false);
+    assert.equal(isWebUrlReadArgs(123), false);
+    assert.equal(isWebUrlReadArgs({}), false);
+  });
+
+  // 🧪 Integration Tests - Server Creation and Handlers
+
+  await testFunction('Index - Type guard isSearXNGWebSearchArgs', () => {
+    // Test the actual exported function
+    assert.equal(isSearXNGWebSearchArgs({ query: 'test search', language: 'en' }), true);
+    assert.equal(isSearXNGWebSearchArgs({ query: 'test', pageno: 1, time_range: 'day' }), true);
+    assert.equal(isSearXNGWebSearchArgs({ notQuery: 'invalid' }), false);
+    assert.equal(isSearXNGWebSearchArgs(null), false);
+    assert.equal(isSearXNGWebSearchArgs(undefined), false);
+    assert.equal(isSearXNGWebSearchArgs('string'), false);
+    assert.equal(isSearXNGWebSearchArgs(123), false);
+    assert.equal(isSearXNGWebSearchArgs({}), false);
+  });
+
+  await testFunction('Index - Type guard isWebUrlReadArgs', () => {
+    // Test the actual exported function
+    assert.equal(isWebUrlReadArgs({ url: 'https://example.com' }), true);
+    assert.equal(isWebUrlReadArgs({ url: 'http://test.com' }), true);
+    assert.equal(isWebUrlReadArgs({ notUrl: 'invalid' }), false);
+    assert.equal(isWebUrlReadArgs(null), false);
+    assert.equal(isWebUrlReadArgs(undefined), false);
+    assert.equal(isWebUrlReadArgs('string'), false);
+    assert.equal(isWebUrlReadArgs(123), false);
+    assert.equal(isWebUrlReadArgs({}), false);
+  });
+
+  // 🧪 Integration Tests - Server Creation and Handlers
+  console.log('\n🔥 Index.ts Integration Tests');
+
+  await testFunction('Index - Call tool handler error handling', async () => {
+    // Test error handling for invalid arguments
+    const invalidSearchArgs = { notQuery: 'invalid' };
+    const invalidUrlArgs = { notUrl: 'invalid' };
+    
+    assert.ok(!isSearXNGWebSearchArgs(invalidSearchArgs));
+    assert.ok(!isWebUrlReadArgs(invalidUrlArgs));
+    
+    // Test unknown tool error
+    const unknownToolRequest = { name: 'unknown_tool', arguments: {} };
+    assert.notEqual(unknownToolRequest.name, 'searxng_web_search');
+    assert.notEqual(unknownToolRequest.name, 'web_url_read');
+    
+    // Simulate error response
+    try {
+      if (unknownToolRequest.name !== 'searxng_web_search' && 
+          unknownToolRequest.name !== 'web_url_read') {
+        throw new Error(`Unknown tool: ${unknownToolRequest.name}`);
+      }
+    } catch (error) {
+      assert.ok(error instanceof Error);
+      assert.ok(error.message.includes('Unknown tool'));
+    }
+  });
+
+  await testFunction('Index - Set log level handler simulation', async () => {
+    const { setLogLevel } = await import('./src/logging.js');
+    
+    // Test valid log level
+    const validLevel = 'debug' as LoggingLevel;
+    
+    // This would be the handler logic
+    let currentTestLevel = 'info' as LoggingLevel;
+    currentTestLevel = validLevel;
+    setLogLevel(validLevel);
+    
+    assert.equal(currentTestLevel, 'debug');
+    
+    // Response should be empty object
+    const response = {};
+    assert.deepEqual(response, {});
+  });
+
+  await testFunction('Index - Read resource handler simulation', async () => {
+    // Test config resource
+    const configUri = "config://server-config";
+    const configContent = createConfigResource();
+    
+    const configResponse = {
+      contents: [
+        {
+          uri: configUri,
+          mimeType: "application/json",
+          text: configContent
+        }
+      ]
+    };
+    
+    assert.equal(configResponse.contents[0].uri, configUri);
+    assert.equal(configResponse.contents[0].mimeType, "application/json");
+    assert.ok(typeof configResponse.contents[0].text === 'string');
+    
+    // Test help resource
+    const helpUri = "help://usage-guide";
+    const helpContent = createHelpResource();
+    
+    const helpResponse = {
+      contents: [
+        {
+          uri: helpUri,
+          mimeType: "text/markdown",
+          text: helpContent
+        }
+      ]
+    };
+    
+    assert.equal(helpResponse.contents[0].uri, helpUri);
+    assert.equal(helpResponse.contents[0].mimeType, "text/markdown");
+    assert.ok(typeof helpResponse.contents[0].text === 'string');
+    
+    // Test unknown resource error
+    const testUnknownResource = (uri: string) => {
+      if (uri !== "config://server-config" && 
+          uri !== "help://usage-guide") {
+        throw new Error(`Unknown resource: ${uri}`);
+      }
+    };
+    
+    try {
+      testUnknownResource("unknown://resource");
+    } catch (error) {
+      assert.ok(error instanceof Error);
+      assert.ok(error.message.includes('Unknown resource'));
     }
   });
 

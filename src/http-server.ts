@@ -5,8 +5,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { logMessage } from "./logging.js";
-
-const packageVersion = "0.6.1";
+import { packageVersion } from "./index.js";
 
 export async function createHttpServer(server: Server): Promise<express.Application> {
   const app = express();
@@ -98,7 +97,7 @@ export async function createHttpServer(server: Server): Promise<express.Applicat
   });
 
   // Health check endpoint
-  app.get('/health', (req, res) => {
+  app.get('/health', (_req, res) => {
     res.json({ 
       status: 'healthy',
       server: 'ihor-sokoliuk/mcp-searxng',

@@ -12,7 +12,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 // Import modularized functionality
-import { WEB_SEARCH_TOOL, READ_URL_TOOL } from "./types.js";
+import { WEB_SEARCH_TOOL, READ_URL_TOOL, isSearXNGWebSearchArgs } from "./types.js";
 import { logMessage, setLogLevel } from "./logging.js";
 import { performWebSearch } from "./search.js";
 import { fetchAndConvertToMarkdown } from "./url-reader.js";
@@ -23,27 +23,14 @@ import { validateEnvironment as validateEnv } from "./error-handler.js";
 // Use a static version string that will be updated by the version script
 const packageVersion = "0.6.1";
 
+// Export the version for use in other modules
+export { packageVersion };
+
 // Global state for logging level
 let currentLogLevel: LoggingLevel = "info";
 
-// Type guard function (kept local since it's specific to this server)
-function isSearXNGWebSearchArgs(args: unknown): args is {
-  query: string;
-  pageno?: number;
-  time_range?: string;
-  language?: string;
-  safesearch?: string;
-} {
-  return (
-    typeof args === "object" &&
-    args !== null &&
-    "query" in args &&
-    typeof (args as { query: string }).query === "string"
-  );
-}
-
 // Type guard for URL reading args
-function isWebUrlReadArgs(args: unknown): args is { url: string } {
+export function isWebUrlReadArgs(args: unknown): args is { url: string } {
   return (
     typeof args === "object" &&
     args !== null &&
