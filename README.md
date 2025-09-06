@@ -587,7 +587,7 @@ npm run watch
    - Main server logic: `src/index.ts`
    - Error handling: `src/error-handler.ts`
 
-3. **Build and test:**`
+3. **Build and test:**
    ```bash
    npm run build               # Build the project
    npm test                     # Run unit tests
