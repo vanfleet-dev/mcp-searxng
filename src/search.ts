@@ -67,7 +67,11 @@ export async function performWebSearch(
 
   // Prepare request options with headers
   const requestOptions: RequestInit = {
-    method: "GET"
+    method: "GET",
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; MCP-SearXNG/1.0)',
+      'X-Forwarded-For': '127.0.0.1'
+    }
   };
 
   // Add proxy agent if proxy is configured
