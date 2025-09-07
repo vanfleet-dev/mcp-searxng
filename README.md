@@ -98,6 +98,52 @@ export HTTPS_PROXY=http://username:password@proxy.company.com:8080
 
 **Note:** If no proxy environment variables are set, the server will make direct connections as normal. See the usage examples below for how to configure proxy settings with different installation methods.
 
+## OpenCode Integration
+
+This branch (`opencode-integration`) provides enhanced support for integrating MCP-SearXNG with OpenCode. It includes templates, scripts, and documentation specifically for OpenCode users.
+
+### Quick Start for OpenCode
+
+1. **Clone this branch:**
+   ```bash
+   git clone -b opencode-integration https://github.com/vanfleet-dev/mcp-searxng.git
+   cd mcp-searxng
+   ```
+
+2. **Run setup script:**
+   ```bash
+   ./scripts/setup-opencode.sh
+   ```
+
+3. **Set up SearXNG:**
+   ```bash
+   cp templates/docker-compose.yml.example docker-compose.yml
+   cp templates/searxng-settings.yml.example searxng-settings.yml
+   docker-compose up -d
+   ```
+
+4. **Configure OpenCode:**
+   ```bash
+   cp templates/opencode.json.example ~/.config/opencode/opencode.json
+   # Edit the path in opencode.json to point to your mcp-searxng/dist/index.js
+   ./scripts/validate-config.sh
+   ```
+
+5. **Restart OpenCode** and test with a search query.
+
+### Resources
+- **macOS Setup Guide:** [docs/opencode-setup-macos.md](docs/opencode-setup-macos.md)
+- **Linux Setup Guide:** [docs/opencode-setup-linux.md](docs/opencode-setup-linux.md)
+- **Troubleshooting:** [docs/troubleshooting.md](docs/troubleshooting.md)
+- **Templates:** [templates/](templates/) - Example configs for OpenCode, Docker, and SearXNG
+- **Scripts:** [scripts/](scripts/) - Setup and validation scripts
+
+### Key Features for OpenCode
+- Pre-configured templates with working headers to avoid 403 errors
+- Simple validation scripts for config files
+- Platform-specific documentation (macOS/Linux)
+- Modular design - opt-in enhancements without affecting core functionality
+
 ### [NPX](https://www.npmjs.com/package/mcp-searxng)
 
 #### Basic Configuration
