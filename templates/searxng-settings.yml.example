@@ -1,0 +1,50 @@
+use_default_settings: true
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "your-secret-key-here"
+  limiter: false
+  image_proxy: true
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "en"
+  formats:
+    - html
+    - json
+ui:
+  static_use_hash: true
+  theme_args:
+    simple_style: dark
+engines:
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+    disabled: false
+  - name: google
+    engine: google
+    shortcut: gg
+    disabled: false
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: wp
+    disabled: false
+outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 30.0
+  pool_connections: 100
+  pool_maxsize: 20
+  useragent_suffix: ""
+  enable_http2: true
+general:
+  debug: false
+  instance_name: "SearXNG"
+  contact_url: false
+  enable_metrics: true
+  donation_url: false
+botdetection:
+  ip_limit:
+    active: false
+  ip_lists:
+    active: false
+  pass_searxng_org: false
